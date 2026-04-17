@@ -9,7 +9,7 @@
 <!--  Login Protection -->
 <script>
   if (!localStorage.getItem("loggedIn")) {
-    window.location.href = "login.html";
+    window.location.href = "index.html";
   }
 </script>
 
@@ -246,7 +246,7 @@ function filterEntries(type) {
 // 🔐 LOGOUT
 function logout() {
   localStorage.removeItem("loggedIn");
-  window.location.href = "login.html";
+  window.location.href = "index.html";
 }
 
 // LOAD
