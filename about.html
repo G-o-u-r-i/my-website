@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Digital Diary</title>
+</head>
+
+<body style="margin:0; font-family: Arial; display:flex; height:100vh;">
+
+<!--  Login Protection -->
+<script>
+  if (!localStorage.getItem("loggedIn")) {
+    window.location.href = "login.html";
+  }
+</script>
+
+<!--  SIDEBAR -->
+<div style="
+  width:220px;
+  background:#202020;
+  color:white;
+  padding:20px;
+">
+
+  <h3> Diary</h3>
+
+  <p onclick="filterEntries('all')" style="cursor:pointer;">📥 All Entries</p>
+  <p onclick="filterEntries('today')" style="cursor:pointer;">📅 Today</p>
+  <p onclick="filterEntries('happy')" style="cursor:pointer;">😊 Happy</p>
+  <p onclick="filterEntries('sad')" style="cursor:pointer;">😢 Sad</p>
+  <p onclick="filterEntries('angry')" style="cursor:pointer;">😡 Angry</p>
+
+  <button onclick="logout()" style="
+    margin-top:20px;
+    padding:8px;
+    width:100%;
+    background:red;
+    border:none;
+    color:white;
+    border-radius:6px;
+    cursor:pointer;
+  ">Logout</button>
+
+</div>
+
+<!-- MAIN AREA -->
+<div style="flex:1; padding:20px; background:#f5f5f5;">
+
+  <h2>My Diary</h2>
+
+  <!-- ADD / EDIT ENTRY -->
+  <div style="
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:20px;
+  ">
+
+    <input id="title" placeholder="Title" style="
+      width:100%;
+      padding:10px;
+      margin-bottom:10px;
+      border-radius:6px;
+      border:1px solid #ccc;
+    ">
+
+    <textarea id="content" placeholder="Write something..." style="
+      width:100%;
+      padding:10px;
+      height:70px;
+      margin-bottom:10px;
+      border-radius:6px;
+      border:1px solid #ccc;
+    "></textarea>
+
+    <!-- 📅 DATE PICKER -->
+    <input type="date" id="date" style="
+      width:100%;
+      padding:10px;
+      margin-bottom:10px;
+      border-radius:6px;
+      border:1px solid #ccc;
+    ">
+
+    <!-- 😊 MOOD -->
+    <select id="mood" style="padding:8px; border-radius:6px;">
+      <option>😊 Happy</option>
+      <option>😢 Sad</option>
+      <option>😡 Angry</option>
+    </select>
+
+    <button onclick="saveEntry()" id="saveBtn" style="
+      float:right;
+      background:#e44232;
+      color:white;
+      border:none;
+      padding:8px 12px;
+      border-radius:6px;
+      cursor:pointer;
+    ">Add</button>
+
+  </div>
+
+  <!-- ENTRIES -->
+  <div id="entries"></div>
+
+</div>
+
+<!-- SCRIPT -->
+<script>
+
+let editIndex = -1;
+let currentFilter = "all";
+
+// 📅 FORMAT DATE
+function formatDate(dateString) {
+  const d = new Date(dateString);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+// ➕ SAVE / UPDATE
+function saveEntry() {
+  const title = document.getElementById("title").value;
+  const content = document.getElementById("content").value;
+  const mood = document.getElementById("mood").value;
+  const dateInput = document.getElementById("date").value;
+
+  if (!title || !content || !dateInput) {
+    alert("Fill all fields");
+    return;
+  }
+
+  let entries = JSON.parse(localStorage.getItem("diaryEntries")) || [];
+
+  const entry = {
+    title,
+    content,
+    mood,
+    date: dateInput
+  };
+
+  if (editIndex !== -1) {
+    entries[editIndex] = entry;
+    editIndex = -1;
+    document.getElementById("saveBtn").innerText = "Add";
+  } else {
+    entries.push(entry);
+  }
+
+  localStorage.setItem("diaryEntries", JSON.stringify(entries));
+
+  document.getElementById("title").value = "";
+  document.getElementById("content").value = "";
+  document.getElementById("date").value = "";
+
+  displayEntries();
+}
+
+// 📄 DISPLAY + FILTER
+function displayEntries() {
+  const container = document.getElementById("entries");
+  let entries = JSON.parse(localStorage.getItem("diaryEntries")) || [];
+
+  container.innerHTML = "";
+
+  const today = new Date().toISOString().split("T")[0];
+
+  entries.reverse().forEach((e, i) => {
+
+    if (currentFilter === "today" && e.date !== today) return;
+    if (currentFilter === "happy" && !e.mood.includes("Happy")) return;
+    if (currentFilter === "sad" && !e.mood.includes("Sad")) return;
+    if (currentFilter === "angry" && !e.mood.includes("Angry")) return;
+
+    container.innerHTML += `
+      <div style="
+        background:white;
+        padding:15px;
+        margin-bottom:10px;
+        border-radius:10px;
+        box-shadow:0 2px 5px rgba(0,0,0,0.1);
+      ">
+        <b>${e.title}</b>
+        <p>${e.content}</p>
+        <small>${e.mood} | ${formatDate(e.date)}</small><br><br>
+
+        <button onclick="editEntry(${i})" style="
+          margin-right:10px;
+          padding:5px 10px;
+          border:none;
+          background:#007bff;
+          color:white;
+          border-radius:5px;
+          cursor:pointer;
+        ">Edit</button>
+
+        <button onclick="deleteEntry(${i})" style="
+          padding:5px 10px;
+          border:none;
+          background:#dc3545;
+          color:white;
+          border-radius:5px;
+          cursor:pointer;
+        ">Delete</button>
+      </div>
+    `;
+  });
+}
+
+// ✏️ EDIT
+function editEntry(index) {
+  let entries = JSON.parse(localStorage.getItem("diaryEntries")) || [];
+
+  const actualIndex = entries.length - 1 - index;
+  const entry = entries[actualIndex];
+
+  document.getElementById("title").value = entry.title;
+  document.getElementById("content").value = entry.content;
+  document.getElementById("mood").value = entry.mood;
+  document.getElementById("date").value = entry.date;
+
+  editIndex = actualIndex;
+
+  document.getElementById("saveBtn").innerText = "Update";
+}
+
+// 🗑 DELETE
+function deleteEntry(index) {
+  let entries = JSON.parse(localStorage.getItem("diaryEntries")) || [];
+
+  const actualIndex = entries.length - 1 - index;
+  entries.splice(actualIndex, 1);
+
+  localStorage.setItem("diaryEntries", JSON.stringify(entries));
+  displayEntries();
+}
+
+// 🎯 FILTER
+function filterEntries(type) {
+  currentFilter = type;
+  displayEntries();
+}
+
+// 🔐 LOGOUT
+function logout() {
+  localStorage.removeItem("loggedIn");
+  window.location.href = "login.html";
+}
+
+// LOAD
+displayEntries();
+
+</script>
+
+</body>
+</html>

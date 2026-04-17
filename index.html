@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login / Signup</title>
+</head>
+
+<body style="
+  margin:0;
+  font-family: Arial;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+">
+
+<!-- 🔐 LOGIN CARD -->
+<div style="
+  background:white;
+  padding:35px;
+  border-radius:15px;
+  width:320px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.15);
+  text-align:center;
+">
+
+  <h2 style="margin-bottom:5px;">📘 Digital Diary</h2>
+  <p style="color:gray; margin-bottom:25px;">Login or create your account ✨</p>
+
+  <!-- EMAIL -->
+  <input type="email" id="email" placeholder="📧 Enter Email" style="
+    width:100%;
+    padding:12px;
+    margin-bottom:15px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:14px;
+  ">
+
+  <!-- PASSWORD -->
+  <input type="password" id="password" placeholder="🔒 Enter Password" style="
+    width:100%;
+    padding:12px;
+    margin-bottom:20px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    font-size:14px;
+  ">
+
+  <!-- BUTTONS -->
+  <button onclick="login()" style="
+    width:100%;
+    padding:12px;
+    background:#e44232;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+    margin-bottom:10px;
+  ">
+    Login 🚀
+  </button>
+
+  <button onclick="signup()" style="
+    width:100%;
+    padding:12px;
+    background:#444;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    cursor:pointer;
+  ">
+    Create Account ✨
+  </button>
+
+</div>
+
+<!-- SCRIPT (UNCHANGED LOGIC) -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBTckFdWrV_zVnIPwU6BZHvFNOR8nOz06Q",
+  authDomain: "digital-diary-897cf.firebaseapp.com",
+  projectId: "digital-diary-897cf",
+  storageBucket: "digital-diary-897cf.firebasestorage.app",
+  messagingSenderId: "479240824749",
+  appId: "1:479240824749:web:680a57e92a7536d920e324",
+  measurementId: "G-6Q32L2NX6W"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// ✅ SIGN UP
+window.signup = function() {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+
+  createUserWithEmailAndPassword(auth, email, pass)
+    .then(() => alert("Signup successful ✅"))
+    .catch(err => alert(err.message));
+};
+
+// ✅ LOGIN
+window.login = function() {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+
+  signInWithEmailAndPassword(auth, email, pass)
+    .then(() => {
+      alert("Login successful ✅");
+      localStorage.setItem("loggedIn", "true");
+      window.location.href = "./index.html";
+    })
+    .catch(err => alert(err.message));
+};
+
+</script>
+
+</body>
+</html>
